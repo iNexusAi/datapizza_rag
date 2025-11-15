@@ -47,20 +47,42 @@ cp .env.example .env
 
 ```
 DATAPIZZA/
-├── run.py                 # Interfaccia UI Streamlit
-├── rag_logic.py          # Logica di business RAG
-├── start.sh              # Script per avviare l'app (macOS/Linux)
-├── requirements.txt      # Dipendenze Python
-├── sample_document.txt   # Documento di esempio
-└── README.md            # Questa guida
+├── run.py                      # UI Streamlit (Versione Produzione con persistenza)
+├── run_demo.py                 # UI Streamlit (Versione Demo in-memory)
+├── rag_logic.py                # Logica RAG (Versione Produzione)
+├── rag_logic_demo.py           # Logica RAG (Versione Demo)
+├── start.sh                    # Script avvio produzione
+├── start_demo.sh               # Script avvio demo
+├── requirements.txt            # Dipendenze Python
+├── sample_document.txt         # Documento di esempio
+├── static/
+│   └── style.css               # Stile macOS personalizzato
+└── README.md                   # Questa guida
 ```
 
 ## 🎯 Utilizzo
 
+### 🚀 Due Versioni Disponibili:
+
+#### 1️⃣ **Versione Produzione** (Con Persistenza)
+I documenti vengono salvati su disco e rimangono disponibili tra i riavvii.
+
+#### 2️⃣ **Versione Demo** (In-Memory)
+I documenti vengono memorizzati solo in RAM. Ideale per demo e testing rapidi.
+⚠️ I dati vengono persi quando si riavvia Streamlit!
+
+---
+
 ### Metodo 1: Script di Avvio (Consigliato per macOS/Linux)
 
+**Versione Produzione (con persistenza):**
 ```bash
 ./start.sh
+```
+
+**Versione Demo (in-memory):**
+```bash
+./start_demo.sh
 ```
 
 Lo script si occuperà di:
@@ -70,12 +92,22 @@ Lo script si occuperà di:
 
 ### Metodo 2: Manuale
 
+**Versione Produzione:**
 ```bash
 # Attiva l'ambiente virtuale
 source env_project/bin/activate
 
 # Avvia l'applicazione
 streamlit run run.py
+```
+
+**Versione Demo:**
+```bash
+# Attiva l'ambiente virtuale
+source env_project/bin/activate
+
+# Avvia l'applicazione DEMO
+streamlit run run_demo.py
 ```
 
 L'applicazione si aprirà automaticamente nel tuo browser all'indirizzo `http://localhost:8501`

@@ -1,6 +1,8 @@
 """
-RAG System - Streamlit UI
-Interfaccia utente per il sistema RAG basato su datapizza.ai
+RAG System - Streamlit UI (DEMO VERSION - In-Memory Only)
+⚠️ Questa versione NON persiste i dati su disco!
+I documenti vengono persi quando si riavvia Streamlit.
+Perfetta per demo e testing rapidi.
 """
 
 import os
@@ -12,7 +14,7 @@ if sys.platform == 'darwin':  # macOS
     os.environ['REQUESTS_CA_BUNDLE'] = '/opt/homebrew/etc/openssl@3/cert.pem'
 
 import streamlit as st
-from rag_logic import (
+from rag_logic_demo import (  # ← USA LA VERSIONE DEMO!
     RAGSystem,
     process_uploaded_files,
     get_vector_size
@@ -155,11 +157,8 @@ with col1:
                     # Processa i file
                     all_chunks = []
                     for uploaded_file in uploaded_files:
-                        st.info(f"📖 Processamento: {uploaded_file.name}")
                         chunks = process_uploaded_files([uploaded_file])
                         all_chunks.extend(chunks)
-                    
-                    st.info(f"📊 Totale chunks da indicizzare: {len(all_chunks)}")
                     
                     # Indicizza con progress bar
                     progress_bar = st.progress(0)
@@ -196,7 +195,7 @@ with col1:
     
     # Mostra stato
     if st.session_state.documents_loaded:
- 
+
         st.markdown('</div>', unsafe_allow_html=True)
 
 with col2:
