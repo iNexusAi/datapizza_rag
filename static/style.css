@@ -45,7 +45,7 @@
 }
 
 .subtitle {
-    font-size: 1.25rem;
+    font-size: 1.75rem;
     font-weight: 400;
     color: var(--mac-text-secondary);
     text-align: center;
@@ -110,6 +110,40 @@ section[data-testid="stSidebar"] > div {
 
 .stButton button:active {
     transform: translateY(0);
+}
+
+/* Pulsante Reset Chat - grigio chiaro */
+section[data-testid="stSidebar"] .stButton button[kind="secondary"],
+section[data-testid="stSidebar"] .stButton button {
+    background: #e8e8ea !important;
+    color: #1d1d1f !important;
+    border: none !important;
+}
+
+section[data-testid="stSidebar"] .stButton button:hover {
+    background: #d1d1d6 !important;
+    transform: translateY(-1px);
+    box-shadow: var(--mac-shadow-large);
+}
+
+/* Pulsante Indicizza Documenti - gradiente come titolo */
+/* Targetta il pulsante nella prima colonna (Caricamento Documenti) */
+div[data-testid="column"] .stButton button:has-text("Indicizza"),
+div[data-testid="column"] .stButton button[kind="primary"],
+.element-container:has(button:contains("Indicizza")) button,
+div.row-widget:first-child div[data-testid="column"]:first-child .stButton button {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    color: white !important;
+    border: none !important;
+    font-weight: 600 !important;
+}
+
+div[data-testid="column"] .stButton button:has-text("Indicizza"):hover,
+div[data-testid="column"] .stButton button[kind="primary"]:hover,
+div.row-widget:first-child div[data-testid="column"]:first-child .stButton button:hover {
+    background: linear-gradient(135deg, #5568d3 0%, #63408b 100%) !important;
+    transform: translateY(-1px);
+    box-shadow: var(--mac-shadow-large);
 }
 
 /* File uploader stile macOS */
@@ -188,6 +222,16 @@ section[data-testid="stSidebar"] > div {
 /* Slider stile macOS */
 .stSlider > div > div > div {
     background: var(--mac-blue);
+}
+
+/* Track della barra dello slider */
+.stSlider [data-baseweb="slider"] [data-testid="stTickBar"] {
+    background: rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Parte non selezionata dello slider - grigio */
+.stSlider [data-baseweb="slider"] > div > div:last-child {
+    background: rgba(0, 0, 0, 0.15) !important;
 }
 
 /* Checkbox e radio stile macOS */

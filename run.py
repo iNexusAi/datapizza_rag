@@ -41,7 +41,7 @@ load_css()
 
 # Titolo principale
 st.markdown('<h1 class="main-header">🍕 DataPizza RAG System</h1>', unsafe_allow_html=True)
-st.markdown('<p class="subtitle">Retrieval-Augmented Generation con datapizza.ai</p>', unsafe_allow_html=True)
+st.markdown('<p class="subtitle">Retrieval-Augmented Generation by iNexus</p>', unsafe_allow_html=True)
 st.markdown("<div style='margin-top: 2rem;'></div>", unsafe_allow_html=True)
 # Inizializzazione dello stato della sessione
 if "documents_loaded" not in st.session_state:
@@ -66,18 +66,10 @@ with st.sidebar:
         help="Inserisci la tua API key di OpenAI"
     )
     
-    st.markdown("---")
-    
-    # Configurazione Qdrant
-    st.markdown("### 🗄️ Qdrant Configuration")
-    use_memory = st.checkbox("Usa Qdrant in-memory", value=True, help="Se selezionato, usa Qdrant in memoria (nessun server richiesto)")
-    
-    if not use_memory:
-        qdrant_host = st.text_input("Qdrant Host", value="localhost")
-        qdrant_port = st.number_input("Qdrant Port", value=6333, min_value=1, max_value=65535)
-    else:
-        qdrant_host = "localhost"
-        qdrant_port = 6333
+    # Pulisci l'API key da spazi o caratteri nascosti
+    if openai_api_key:
+        openai_api_key = openai_api_key.strip()
+
     
     st.markdown("---")
     
@@ -102,6 +94,48 @@ with st.sidebar:
         value=3,
         help="Quanti documenti recuperare dal vectorstore"
     )
+    
+    st.markdown("---")
+    
+    # Parametri di Chunking
+    st.markdown("### 📏 Parametri Chunking")
+    
+    chunk_size = st.slider(
+        "Dimensione chunks",
+        min_value=200,
+        max_value=2000,
+        value=500,
+        step=100,
+        help="Numero di caratteri per ogni chunk"
+    )
+    
+    chunk_overlap = st.slider(
+        "Overlap tra chunks",
+        min_value=0,
+        max_value=500,
+        value=50,
+        step=25,
+        help="Numero di caratteri sovrapposti tra chunks consecutivi (default datapizza: 50)"
+    )
+    
+    st.markdown("---")
+    
+    # Parametri di Generazione
+    st.markdown("### 🎛️ Parametri Generazione")
+    
+    temperature = st.slider(
+        "Temperature",
+        min_value=0.0,
+        max_value=1.0,
+        value=0.0,
+        step=0.1,
+        help="Creatività delle risposte (0=deterministica e fedele ai documenti, 1=creativa, consigliato: 0)"
+    )
+    
+    # Parametri avanzati (valori predefiniti)
+    system_prompt = "Riscrivi le query dell'utente per migliorare l'accuratezza del recupero."
+    user_prompt_template = "Domanda dell'utente: {{user_prompt}}\n"
+    retrieval_prompt_template = "Contenuto recuperato:\n{% for chunk in chunks %}{{ chunk.text }}\n{% endfor %}"
     
     st.markdown("---")
     
@@ -131,19 +165,19 @@ with col1:
         else:
             with st.spinner("📚 Elaborazione documenti in corso..."):
                 try:
-                    # Inizializza il sistema RAG
-                    st.session_state.rag_system = RAGSystem(
-                        openai_api_key=openai_api_key,
-                        model_name=model_name,
-                        embedding_model=embedding_model
-                    )
+                    # Inizializza il sistema RAG se non esiste già
+                    if st.session_state.rag_system is None:
+                        st.session_state.rag_system = RAGSystem(
+                            openai_api_key=openai_api_key,
+                            model_name=model_name,
+                            embedding_model=embedding_model
+                        )
                     
-                    # Inizializza Qdrant
-                    st.session_state.rag_system.initialize_qdrant(
-                        use_memory=use_memory,
-                        host=qdrant_host,
-                        port=qdrant_port
-                    )
+                    # Inizializza Qdrant se non è già inizializzato
+                    if st.session_state.rag_system.qdrant_client is None:
+                        st.session_state.rag_system.initialize_qdrant(
+                            use_memory=True  # usa_memory=True ora significa persistenza locale
+                        )
                     
                     # Crea collection
                     vector_size = get_vector_size(embedding_model)
@@ -155,11 +189,8 @@ with col1:
                     # Processa i file
                     all_chunks = []
                     for uploaded_file in uploaded_files:
-                        st.info(f"📖 Processamento: {uploaded_file.name}")
-                        chunks = process_uploaded_files([uploaded_file])
+                        chunks = process_uploaded_files([uploaded_file], chunk_size=chunk_size, chunk_overlap=chunk_overlap)
                         all_chunks.extend(chunks)
-                    
-                    st.info(f"📊 Totale chunks da indicizzare: {len(all_chunks)}")
                     
                     # Indicizza con progress bar
                     progress_bar = st.progress(0)
@@ -182,7 +213,11 @@ with col1:
                     # Crea la pipeline
                     st.session_state.pipeline = st.session_state.rag_system.create_pipeline(
                         collection_name=st.session_state.collection_name,
-                        k=k_documents
+                        k=k_documents,
+                        temperature=temperature,
+                        system_prompt=system_prompt,
+                        user_prompt_template=user_prompt_template,
+                        retrieval_prompt_template=retrieval_prompt_template
                     )
                     
                     st.session_state.documents_loaded = True
@@ -214,9 +249,7 @@ with col2:
                     embedding_model=embedding_model
                 )
                 st.session_state.rag_system.initialize_qdrant(
-                    use_memory=use_memory,
-                    host=qdrant_host,
-                    port=qdrant_port
+                    use_memory=True  # usa_memory=True ora significa persistenza locale
                 )
             
             # Verifica se la collection esiste
@@ -280,7 +313,11 @@ with col2:
                     if st.session_state.pipeline is None:
                         st.session_state.pipeline = st.session_state.rag_system.create_pipeline(
                             collection_name=st.session_state.collection_name,
-                            k=k_documents
+                            k=k_documents,
+                            temperature=temperature,
+                            system_prompt=system_prompt,
+                            user_prompt_template=user_prompt_template,
+                            retrieval_prompt_template=retrieval_prompt_template
                         )
                     
                     # Usa streaming
@@ -331,7 +368,7 @@ with col2:
 st.markdown("---")
 st.markdown("""
 <div style="text-align: center; color: #666;">
-    <p>Powered by <strong>datapizza.ai</strong> 🍕 | Built with Streamlit</p>
+    <p>Powered by <strong>iNexus</strong> 🍕 | Built with Streamlit by <strong>iNexus</strong></p>
 </div>
 """, unsafe_allow_html=True)
 

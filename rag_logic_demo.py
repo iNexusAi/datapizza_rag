@@ -153,13 +153,20 @@ class RAGSystem:
         
         return len(points)
     
-    def create_pipeline(self, collection_name, k=3):
+    def create_pipeline(self, collection_name, k=3, temperature=0.0, 
+                       system_prompt="Riscrivi le query dell'utente per migliorare l'accuratezza del recupero.",
+                       user_prompt_template="Domanda dell'utente: {{user_prompt}}\n",
+                       retrieval_prompt_template="Contenuto recuperato:\n{% for chunk in chunks %}{{ chunk.text }}\n{% endfor %}"):
         """
         Crea la pipeline RAG completa
         
         Args:
             collection_name: Nome della collection Qdrant
-            k: Numero di documenti da recuperare
+            k: Numero di documenti da recuperare (default: 3)
+            temperature: Temperature per la generazione (default: 0.0 per risposte deterministiche)
+            system_prompt: Prompt di sistema per il rewriter
+            user_prompt_template: Template per la domanda utente
+            retrieval_prompt_template: Template per il contesto recuperato
             
         Returns:
             DagPipeline configurata
@@ -167,7 +174,9 @@ class RAGSystem:
         # Inizializza componenti
         openai_client = OpenAIClient(
             model=self.model_name,
-            api_key=self.openai_api_key
+            api_key=self.openai_api_key,
+            temperature=temperature
+            # Nota: max_tokens viene passato nella chiamata, non nel costruttore
         )
         
         embedder = OpenAIEmbedder(
@@ -185,7 +194,7 @@ class RAGSystem:
             "rewriter", 
             ToolRewriter(
                 client=openai_client, 
-                system_prompt="Riscrivi le query dell'utente per migliorare l'accuratezza del recupero."
+                system_prompt=system_prompt
             )
         )
         dag_pipeline.add_module("embedder", embedder)
@@ -200,8 +209,8 @@ class RAGSystem:
         dag_pipeline.add_module(
             "prompt", 
             ChatPromptTemplate(
-                user_prompt_template="Domanda dell'utente: {{user_prompt}}\n",
-                retrieval_prompt_template="Contenuto recuperato:\n{% for chunk in chunks %}{{ chunk.text }}\n{% endfor %}"
+                user_prompt_template=user_prompt_template,
+                retrieval_prompt_template=retrieval_prompt_template
             )
         )
         dag_pipeline.add_module("generator", openai_client)
@@ -422,16 +431,20 @@ def chunk_text(text, chunk_size=500, overlap=50):
     return chunks
 
 
-def process_uploaded_files(uploaded_files):
+def process_uploaded_files(uploaded_files, chunk_size=500, chunk_overlap=50):
     """
     Processa una lista di file caricati (PDF o TXT)
     
     Args:
         uploaded_files: Lista di file caricati
+        chunk_size: Dimensione di ogni chunk (default: 500)
+        chunk_overlap: Numero di caratteri sovrapposti tra chunks (default: 50)
         
     Returns:
         Lista di tutti i chunk estratti dai file
     """
+    import unicodedata
+    
     all_chunks = []
     
     for uploaded_file in uploaded_files:
@@ -441,8 +454,13 @@ def process_uploaded_files(uploaded_files):
         else:
             text = uploaded_file.read().decode("utf-8")
         
+        # Pulisci il testo da caratteri non-ASCII problematici (emoji, etc)
+        # Mantieni solo caratteri ASCII o sostituisci con equivalenti
+        text = unicodedata.normalize('NFKD', text)
+        text = text.encode('ascii', 'ignore').decode('ascii')
+        
         # Chunking
-        chunks = chunk_text(text)
+        chunks = chunk_text(text, chunk_size=chunk_size, overlap=chunk_overlap)
         all_chunks.extend(chunks)
     
     return all_chunks
