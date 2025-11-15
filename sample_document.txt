@@ -1,0 +1,82 @@
+# Guida a DataPizza.ai
+
+## Introduzione
+
+DataPizza.ai è un framework Python moderno per la creazione di applicazioni AI avanzate. Il framework si concentra sulla semplicità d'uso mantenendo al contempo potenza e flessibilità.
+
+## Caratteristiche Principali
+
+### 1. Pipeline Modulare
+
+DataPizza.ai utilizza un sistema di pipeline modulare chiamato DagPipeline che permette di concatenare diversi moduli per creare flussi di lavoro complessi.
+
+I moduli principali includono:
+- **Rewriter**: Riscrive le query per migliorare il retrieval
+- **Embedder**: Genera embedding vettoriali dal testo
+- **Retriever**: Recupera documenti rilevanti da un vectorstore
+- **Prompt**: Costruisce prompt template con variabili
+- **Generator**: Genera risposte usando LLM
+
+### 2. Integration con OpenAI
+
+Il framework si integra nativamente con i modelli OpenAI, supportando:
+- GPT-4o e GPT-4o-mini per la generazione di testo
+- text-embedding-3-small e text-embedding-3-large per gli embedding
+- Streaming delle risposte in tempo reale
+- Gestione automatica delle rate limits
+
+### 3. Vector Store con Qdrant
+
+DataPizza.ai supporta Qdrant come vector database, permettendo:
+- Storage persistente o in-memory
+- Ricerca semantica veloce
+- Filtering avanzato
+- Batch operations
+
+## RAG (Retrieval-Augmented Generation)
+
+Il sistema RAG è una delle applicazioni più comuni di DataPizza.ai. Permette di:
+
+1. **Indicizzare documenti**: Carica e processa documenti di varie tipologie
+2. **Chunking intelligente**: Divide i documenti in chunk con overlap
+3. **Embedding generation**: Trasforma i chunk in vettori
+4. **Semantic search**: Trova i chunk più rilevanti per una query
+5. **Context-aware generation**: Genera risposte basate sul contesto recuperato
+
+## Best Practices
+
+### Chunk Size
+Scegli una dimensione dei chunk appropriata al tuo caso d'uso:
+- **300-500 caratteri**: Per FAQ e documenti brevi
+- **500-1000 caratteri**: Per articoli e documentazione
+- **1000-2000 caratteri**: Per documenti tecnici complessi
+
+### Overlap
+Mantieni un overlap del 10-15% per preservare il contesto tra i chunk.
+
+### Numero di Documenti (k)
+Recupera:
+- **k=3**: Per domande specifiche
+- **k=5**: Per domande generali
+- **k=10**: Per analisi approfondite
+
+## Esempi di Utilizzo
+
+### Query Semplice
+```python
+from datapizza.clients.openai import OpenAIClient
+
+client = OpenAIClient(model="gpt-4o-mini", api_key="your_key")
+result = client.run(input="Ciao, come stai?")
+print(result)
+```
+
+### Pipeline RAG Completa
+Vedi il codice sorgente per un esempio completo di implementazione RAG.
+
+## Conclusione
+
+DataPizza.ai rende semplice costruire applicazioni AI complesse con poche righe di codice. Il framework è in continua evoluzione con nuove features e miglioramenti.
+
+Per maggiori informazioni, visita il sito ufficiale o consulta la documentazione API completa.
+
