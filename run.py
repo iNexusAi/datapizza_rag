@@ -40,8 +40,8 @@ def load_css():
 load_css()
 
 # Titolo principale
-st.markdown('<h1 class="main-header">🍕 DataPizza RAG System</h1>', unsafe_allow_html=True)
-st.markdown('<p class="subtitle">Retrieval-Augmented Generation by iNexus</p>', unsafe_allow_html=True)
+st.markdown('<h1 class="main-header">🍕 DataPizza RAG System - By <a href="https://www.inexus.it" target="_blank" style="color: inherit; text-decoration: underline;">iNexus</a></h1>', unsafe_allow_html=True)
+st.markdown('<p class="subtitle">Retrieval-Augmented Generation</p>', unsafe_allow_html=True)
 st.markdown("<div style='margin-top: 2rem;'></div>", unsafe_allow_html=True)
 # Inizializzazione dello stato della sessione
 if "documents_loaded" not in st.session_state:
@@ -368,7 +368,7 @@ with col2:
 st.markdown("---")
 st.markdown("""
 <div style="text-align: center; color: #666;">
-    <p>Powered by <strong>iNexus</strong> 🍕 | Built with Streamlit by <strong>iNexus</strong></p>
+    <p>Powered by <strong><a href="https://www.inexus.it" target="_blank" style="color: #666; text-decoration: underline;">iNexus</a></strong> 🍕 | Built with Streamlit by <strong><a href="https://www.inexus.it" target="_blank" style="color: #666; text-decoration: underline;">iNexus</a></strong></p>
 </div>
 """, unsafe_allow_html=True)
 
